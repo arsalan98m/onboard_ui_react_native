@@ -1,20 +1,52 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function App() {
+import Onboarding from './src/components/Onboarding';
+import HomeScreen from './src/screens/HomeScreen';
+
+const Loading = () => {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View>
+      <ActivityIndicator size='large' color='#000' />
     </View>
   );
-}
+};
+
+const App = () => {
+  const [loading, setLoading] = useState(true);
+  const [viewOnboarding, setViewOnboarding] = useState(false);
+
+  const checkOnboarding = async () => {
+    try {
+      const value = await AsyncStorage.getItem('@viewOnboarding');
+      if (value !== null) {
+        setViewOnboarding(true);
+      }
+    } catch (err) {
+      console.log('Error @checkOnboarding: ', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkOnboarding();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      {loading ? <Loading /> : viewOnboarding ? <HomeScreen /> : <Onboarding />}
+    </View>
+  );
+};
+
+export default App;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });
